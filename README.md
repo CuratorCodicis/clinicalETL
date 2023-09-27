@@ -10,4 +10,4 @@ Contains source code, scripts, and software configs created as part of my bachel
 <br/>
 <br/>
 
-![pipeline](https://github.com/CuratorCodicis/clinicalETL/assets/146182825/58ec51fd-2f27-4674-ab4e-c7943bd98dc4)
+![pipeline](https://github.com/CuratorCodicis/clinicalETL/assets/146182825/49e6b31c-622b-4591-a098-1dbc4b740b24)
