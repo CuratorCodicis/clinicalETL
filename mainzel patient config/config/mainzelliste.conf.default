@@ -1,0 +1,344 @@
+# Template properties for mainzelliste
+#
+# The configuration listed here provides default values which should be suitable for
+# a variety of szenarios. At least, the sections "Database setup" and "xDAT servers"
+# should be adjusted to the local environment.
+
+# General format: Key-value pairs, separated by spaces, tabs, "=", ":". 
+# Lines starting with "#" are comments. Comments appended to a line are not possible!
+# See Javadoc for java.util.Properties#load(Reader) for details.
+
+# Property names may contain letters, numbers, underscores and dots. Dots define a hierarchical
+# structure on the property names.
+
+# Leading and trailing whitespaces in property values are not allowed and will be removed
+# after loading.
+
+# For a comprehensive documentation of configuration parameters see the configuration manual
+# ("Konfigurationshandbuch").
+
+# debug mode: If set to true, token handling is disabled (i.e. no tokens are necessary).
+debug = false
+
+# Name of this mainzelliste distribution instance.
+dist = Mainzelliste
+
+# Database setup
+
+#Juli: uncommented this to use own database
+# if in docker-compose defined, use postgresql
+# Uncomment this for PostgreSQL
+db.driver = org.postgresql.Driver
+db.url = jdbc:postgresql://db:5432/mainzellistedb
+#db.url = jdbc:postgresql://localhost:5432/mainzelliste
+
+
+# Uncomment this for MySQL
+# db.driver = com.mysql.jdbc.Driver
+# db.url = jdbc:mysql://localhost:3306/mainzelliste
+
+#Juli: This must be the same as in docker-compose
+db.username = mainzellistedb
+db.password = password
+
+# Logging
+#
+# By default, logs are written to stdout. Uncomment the following values to log to a file
+# instead.
+ 
+log.filename = C:/Users/Jacob/Desktop/mainzel juliane/mainzelliste.log
+log.level = DEBUG
+
+#performance tuning soundex-like blocking
+
+#blocking.soundex.type = Soundex
+#blocking.soundex.fields = firstname, lastname
+
+# Field definitions
+#
+# Every input field must be defined here with field.{fieldname}.type = {fieldtype},
+# where fieldname is a unique identifier and fieldtype the name of a subclass of Field.
+# Input data from the field will be stored in objects of that class.
+#
+# Every field defined here must either be contained in the input form 
+# WEB-INF/jsp/patientFormElements.jsp (with corresponding "name"-Tag) or
+# be provided in the createPatient Token
+
+# In order to deactivate fields temporarily, it is sufficient to comment out the field definition.
+
+field.firstname.type = PlainTextField
+field.lastname.type = PlainTextField
+field.birthday.type = IntegerField 
+field.birthmonth.type = IntegerField
+field.birthyear.type = IntegerField
+#field.patientid.type = PlainTextField
+#field.address.type = PlainTextField
+#field.sex.type = PlainTextField
+
+
+# To store the data in hashed form (control numbers) use the type ControlNumberField
+
+# field.firstname.type = ControlNumberField
+# field.lastname.type = ControlNumberField
+# field.birthday.type = ControlNumberField
+# field.birthmonth.type = ControlNumberField
+# field.birthyear.type = ControlNumberField
+# field.address.type = ControlNumberField
+
+
+# Server-side validation
+
+# validator.field.{fieldname}.required: Whether a field must not be empty
+#validator.field.firstname.required = false
+#validator.field.lastname.required = false
+#validator.field.birthday.required = false
+#validator.field.birthmonth.required = false
+#validator.field.birthyear.required = false
+#validator.field.patientid.required = true
+#validator.field.sex.requiered = false
+
+# validator.field.{fieldname}.format: Regular expresssion which a field must adhere to.
+
+# Default: letters, dots, underscores, apostrophes, spaces; at least one letter.
+validator.field.firstname.format = [A-Za-zäÄöÖüÜß\\.\\-' ]*[A-Za-zäÄöÖüÜß]+[A-Za-zäÄöÖüÜß\\.\\-' ]*
+validator.field.lastname.format = [A-Za-zäÄöÖüÜß\\.\\-' ]*[A-Za-zäÄöÖüÜß]+[A-Za-zäÄöÖüÜß\\.\\-' ]*
+validator.field.patientid.format = [A-Za-zäÄöÖüÜß0-9\\.\\-' ]*[A-Za-zäÄöÖüÜß0-9]+[A-Za-zäÄöÖüÜß0-9\\.\\-' ]*
+validator.field.sex.format = [A-Za-z\\.\\-' ]*[A-Za-z]+[A-Za-z\\.\\-' ]*
+
+# Date validation:
+# validator.date.{i}.fields defines a list of fields, separated by commas.
+# The date string is formed by concatenation of these fields.
+# validator.date.{i}.format: A format definition (see java.text.SimpleDateFormat) by
+# which the date string is interpreted. Validation checks if the parsed date is valid.
+# Set fields which form the date and the format (when concatenating the fields).
+# Multiple dates can be specified by supplying multiple definitions with consecutive
+# numbers as {i}
+
+validator.date.0.fields = birthday, birthmonth, birthyear
+validator.date.0.format = ddMMyyyy
+
+
+
+# Exchange groups
+#
+# An exchange group denotes a set of fields whose values are considered interchangeable.
+# The matcher (currently only EpilinkMatcher) compares the fields in each exchange group to
+# all of its permutations and uses the best matching combination for final decision.
+#
+# An exchange group is defined by exchangeGroup.{id} = {fieldlist}, where id is a sequential number
+# and fieldlist a comma-separated list of field names
+exchangeGroup.0 = firstname, lastname
+
+# Field transformations
+#
+# Transformations for a field {fieldname} are defined by
+# field.{fieldname}.transformers = {transformerlist}, where
+# transformerlist is a comma-separated list of names of subclasses of FieldTransformer.
+# 
+# The first transformer in the list is applied to the input field as defined in the field definition;
+# i.e. the type parameter IN of the first transformer must match the class of the field.
+# Every subsequent transformer is applied to the output of its predecessor; i.e. its type parameter IN
+# must match type parameter OUT of the preceding transformer.
+
+field.firstname.transformers = StringNormalizer, FirstNameDecomposer
+field.lastname.transformers = StringNormalizer, GermanLastNameDecomposer
+field.patientid.transformers = StringNormalizer
+#field.sex.transformers = StringNormalizer
+
+# field comparators
+field.firstname.comparator = NGramComparator
+field.lastname.comparator = NGramComparator
+
+field.birthday.comparator = BinaryFieldComparator
+field.birthmonth.comparator = BinaryFieldComparator
+field.birthyear.comparator = BinaryFieldComparator
+
+#field.address.comparator = NGramComparator
+field.patientid.comparator = NGramComparator
+#field.sex.comparator = NGramComparator
+
+# Use DiceField comparator instead of NGramComparator to apply EpilLink algorithm to hashed fields
+
+# field.firstname.comparator = DiceFieldComparator
+
+
+blockingFields.0 birthday, birthmonth
+blockingFields.0 birthday, geburtjahr
+blockingFields.0 birthmonth, birthyear
+
+
+
+# Matcher definition
+# Property matcher defines the class name of the matcher to use, which must be a subclass
+# of Matcher. Currently only EpilinkMatcher and NullMatcher are supported.
+# Null matcher is used to skip the step of record linkage 
+matcher = EpilinkMatcher
+# matcher = NullMatcher
+
+# Config for Epilink Matcher
+#
+# matcher.epilink.{fieldname}.frequency: Defines the assumed mean frequency of values
+# for field {fieldname}. This corresponds to the u-probability in the Fellegi-Sunter-Model
+# and can be estimated by the reciprocal of the number of distinct values (i.e. the
+# frequency of "month" is 1 / 12).
+matcher.epilink.firstname.frequency = 0.000235
+matcher.epilink.lastname.frequency = 0.0000271
+
+# 1 / 30 (approximate average number of days in a month)
+matcher.epilink.birthday.frequency = 0.0333
+# 1 / 12
+matcher.epilink.birthmonth.frequency = 0.0833
+# example value: birth years for an age range of 35 years (40 - 75).
+matcher.epilink.birthyear.frequency = 0.0286
+
+#matcher.epilink.address.frequency = 0.01
+matcher.epilink.patientid.frequency = 0.00000000000000000000000001
+#matcher.epilink.sex.frequency = 0.000235
+
+# matcher.epilink.{fieldname}.error_rate defines the assumed error_rate for
+# field {fieldname} (1 - m-probability)
+#
+# The supplied number stem from the evaluation of a German cancer registry
+matcher.epilink.firstname.errorRate = 0.01
+matcher.epilink.lastname.errorRate = 0.008
+matcher.epilink.birthday.errorRate = 0.005
+matcher.epilink.birthmonth.errorRate = 0.002
+matcher.epilink.birthyear.errorRate = 0.004
+matcher.epilink.patientid.errorRate = 0.0001
+#matcher.epilink.address.errorRate = 0.04
+#matcher.epilink.sex.errorRate = 0.01
+
+
+
+# matcher.epilink.threshold.match: Defines the minimum weight (in the interval [0,1])
+# for which a pair of records is considered a definite match.
+#
+# matcher.epilink.threshold_non_match: Defines the weight (in the interval [0,1])
+# below which a pair of records is considered a definite non-match. Must be less than or equal
+# to matcher.epilink.threshold_match.
+#
+# Record pairs with a weight w with threshold_non_match <= w < threshold_match are
+# considered possible matches and lead to a tentative PID.
+matcher.epilink.threshold_match = 0.95
+matcher.epilink.threshold_non_match = 0.6
+
+
+# ID-Generators
+# 
+# idgenerators: A comma-seperated list of identifiers of ID-Generators, corresponding to ID types.
+# External id types should be also listed here
+
+# For every generator:
+# idgenerator.{identifier}: Class which implements the ID generator.
+# additional parameters depend on the ID generator used.
+#
+idgenerators = pid, intid, pat_id
+
+# For externally generated id types (imported from external systems) use ExternalIDGenerator
+# idgenerators = pid, intid, extid, elasticid
+
+# By default, IDs are generated once they are requested (lazy generation).
+# Set the following parameter to true if upon creating a patient, IDs of all
+# configured types should be created for this patient eagerly.
+idgenerators.eagerGeneration = false
+
+# Additional params for PIDGenerator (k1, k2, k3, rndwidth) are defined here.
+idgenerator.pid = PIDGenerator
+idgenerator.pid.k1 = 1
+idgenerator.pid.k2 = 2
+idgenerator.pid.k3 = 3
+# rndwidth is optional (default 0)
+idgenerator.pid.rndwidth = 0
+
+idgenerator.intid = SimpleIDGenerator
+
+# ElasticIDGenerator is used for randomly generated id types with the flexible length and vocabulary
+# Additional params for ElasticIDGenerator are defined here.
+# idgenerator.elasticid = ElasticIDGenerator
+# idgenerator.elasticid.vocabulary = 23456789ACDEFGHJKMNPQURTUVWXYZ
+# idgenerator.elasticid.length = 7
+
+# For externally generated id types (imported from external systems) use ExternalIDGenerator
+idgenerator.pat_id = ExternalIDGenerator
+
+# Output of result
+
+# Whether to show a result page (defaults to true)
+# Set to false if you use a redirect address with "addPatient"-Tokens
+# and want the user to be immediately redirected to the calling application.
+# Only applicable if a redirect address is defined in a token
+result.show = true
+
+# Whether to include Idat in the result page.
+result.printIdat = true
+
+# Set a fixed language for the user interface. Must be a language code for which a
+# MessageBundle exists in the application. Current valid values are "en" and "de"
+# language =
+
+# xDAT servers
+# 
+# Known Permissions / Token Types:
+# 
+# - showSessionIds: see own sessions via GET /sessions
+# - createSession: create session via POST /sessions
+# - manageSessionPatients: manage the set of patients related to a session 
+#	(operations on /sessions/{sessionid}/patients)
+# 
+# - createToken: create tokens -- in addition, permission "tt_x" is req'd, where x is one of these TOKEN TYPES:
+#   - tt_addPatient: allows to generate one (1) ID. Token is invalidated afterwards even if an existing ID was returned.
+#	- tt_readPatients: allows to read IDAT or pseudonyms of patients
+#   - tt_editPatient: allows to change identifying data of one (1) patient. Token is invalidated afterwards.
+#
+# readAllpatientidTypes: allows to read all IdTypes of a patient
+# readAllpatientids: allows to read all Ids of a patient
+#
+
+# use the Mainzelliste API Key
+# A passphrase used for authentication
+servers.0.apiKey = password
+servers.0.permissions = createSession;showSessionIds;createToken;tt_addPatient;tt_readPatients;tt_editPatient
+
+
+# Accepted origin addresses (IPv4 and/or IPv6) or address ranges in CIDR notation (IPv4 only)
+ 
+#This needs to be set for your IP address 
+# Allow only requests from localhost (e.g. for developing)
+servers.0.allowedRemoteAdresses = 127.0.0.1;0:0:0:0:0:0:0:1;192.168.32.1
+
+# Allow requests from a typical private network
+# servers.0.allowedRemoteAdresses = 192.168.56.0/24
+
+# Allow combination of both
+# servers.0.allowedRemoteAdresses = 127.0.0.1;0:0:0:0:0:0:0:1;192.168.56.0/24
+
+# Allowed origins for cross origin resource sharing (CORS), multiple values separated by ";"
+
+# servers.allowedOrigins = https://mdat-server.example.org 
+
+# Allowed Format of callback
+callback.allowedFormat = https://.*
+callback.allowSelfsigned = false
+
+# Session timeout
+# A session will be deleted if not accessed for this amount of time, specified in minutes
+# Default value if not specified: 10
+# sessionTimeout = 10
+
+# Operator information of the Mainzelliste operator to display around user forms
+# (defaults to empty/invisible):
+# - Contact: Text to be displayed below all forms
+# - Logo: Path to image to be displayed in the upper right corner. This can either be an absolute path
+#         in the file system, a path within the .war file or a path relative to META-INF/resource
+#         within a .jar file on the class path (e.g. a dependency).
+
+# operator.contact = 
+
+# Logo file: example for absolute path
+# operator.logo = /etc/mainzelliste/logo.png
+
+# Logo file: example for relative path in .war file
+# operator.logo = /WEB-INF/classes/logo.png
+
+# Logo file: example for file in META-INF/resources within a .jar file on the classpath 
+# operator.logo = /logo.png
